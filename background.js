@@ -27,6 +27,11 @@ async function importData(deviceCode) {
 		// Start importing
 		printOut('Acquiring token... ');
 		let token = await acquireToken(deviceCode);
+		if (!token) {
+			printOut('Invalid token...', true);
+			outputClass = 'danger';
+			return { outputClass: outputClass, output: output, playerInfo: playerInfo, playerSummary: playerSummary };
+		}
 		printOut('OK!', true);
 
 		printOut('Verifying data and assets versions... ');
