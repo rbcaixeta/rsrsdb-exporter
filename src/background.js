@@ -1,7 +1,7 @@
 console.log('Exporter add-on loaded');
 
 const onMessage = async function (request, sender, sendResponse) {
-	if (!/https?:\/\/\w+\.rsrsdb\.com/.test(sender.url)) return;
+	if (!/https?:\/\/\w*\.?rsrsdb\.com/.test(sender.url)) return;
 	switch (request.type) {
 		case 'start':
 			let result = await importData(request.deviceCode);
