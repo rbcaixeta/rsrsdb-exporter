@@ -13,7 +13,7 @@
 		"48": "icon-192x192.png",
 		"128": "icon-192x192.png"
 	},
-	"permissions": ["webRequest", "https://production-api.rs-us.aktsk.com/*"],
+	"permissions": ["https://production-api.rs-us.aktsk.com/*"],
 	"externally_connectable": {
 		"matches": ["https://*.rsrsdb.com/*"]
 	}
