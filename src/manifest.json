@@ -1,7 +1,7 @@
 {
 	"name": "RSRSDb Data Exporter",
 	"description": "Romancing SaGa re:univerSe data extractor utility. Utilized for rsrsdb.com website.",
-	"version": "1.0",
+	"version": "1.1",
 	"manifest_version": 2,
 	"background": {
 		"persistent": true,
