@@ -4,7 +4,7 @@ const onMessage = async function (request, sender, sendResponse) {
 	if (!/https?:\/\/\w+\.rsrsdb\.com/.test(sender.url)) return;
 	switch (request.type) {
 		case 'start':
-			let result = await importData(request.deviceCode);
+			let result = await importData(request.deviceCode, request.clientVersion);
 			sendResponse(result);
 			break;
 		case 'ping':
@@ -17,7 +17,7 @@ const onMessage = async function (request, sender, sendResponse) {
 chrome.runtime.onMessageExternal.addListener(onMessage);
 
 let output = [];
-async function importData(deviceCode) {
+async function importData(deviceCode, clientVersion) {
 	output = [];
 
 	let playerInfo = null;
@@ -26,7 +26,7 @@ async function importData(deviceCode) {
 	try {
 		// Start importing
 		printOut('Acquiring token... ');
-		let token = await acquireToken(deviceCode);
+		let token = await acquireToken(deviceCode, clientVersion);
 		if (!token) {
 			printOut('Invalid token...', true);
 			outputClass = 'danger';
@@ -36,19 +36,19 @@ async function importData(deviceCode) {
 
 		printOut('Verifying data and assets versions... ');
 		let masterVersion, assetVersion;
-		[masterVersion, assetVersion] = await getVersionStatus(deviceCode, token);
+		[masterVersion, assetVersion] = await getVersionStatus(deviceCode, clientVersion, token);
 		printOut('OK!', true);
 
 		printOut('Fetching player record... ');
-		let playerId = await getPlayerData(deviceCode, token, masterVersion, assetVersion);
+		let playerId = await getPlayerData(deviceCode, clientVersion, token, masterVersion, assetVersion);
 		printOut(`Player ID: ${playerId}`, true);
 
 		printOut('Fetching player info... ');
-		playerInfo = await getPlayerInfo(deviceCode, token, masterVersion, assetVersion);
+		playerInfo = await getPlayerInfo(deviceCode, clientVersion, token, masterVersion, assetVersion);
 		printOut(`Rank: ${playerInfo.rank}, Stamina: ${playerInfo.stamina} / ${playerInfo.max_stamina}`, true);
 
 		printOut('Fetching data... ');
-		playerSummary = await getPlayerSummary(deviceCode, token, masterVersion, assetVersion);
+		playerSummary = await getPlayerSummary(deviceCode, clientVersion, token, masterVersion, assetVersion);
 		printOut('OK!', true);
 		outputClass = 'success';
 	} catch (err) {
@@ -67,35 +67,35 @@ function printOut(line, appendLastLine = false) {
 	else output.push(line);
 }
 
-async function acquireToken(deviceCode) {
-	let result = await run('auth/signin', undefined, deviceCode);
+async function acquireToken(deviceCode, clientVersion) {
+	let result = await run('auth/signin', undefined, deviceCode, clientVersion);
 	return result.token;
 }
 
-async function getVersionStatus(deviceCode, token) {
-	let result = await run('status', undefined, deviceCode, token);
+async function getVersionStatus(deviceCode, clientVersion, token) {
+	let result = await run('status', undefined, deviceCode, clientVersion, token);
 	return [result.master_version, result.assets_version];
 }
 
-async function getPlayerData(deviceCode, token, masterVersion, assetVersion) {
+async function getPlayerData(deviceCode, clientVersion, token, masterVersion, assetVersion) {
 	let body = JSON.stringify({ language: 1, lives_in_eea: false, is_16_years_old_or_over: null, country: 'US', nick_name: 'Polka', device_type: 2 });
-	let result = await run('player/create', body, deviceCode, token, masterVersion, assetVersion);
+	let result = await run('player/create', body, deviceCode, clientVersion, token, masterVersion, assetVersion);
 	return result.player_id;
 }
 
-async function getPlayerInfo(deviceCode, token, masterVersion, assetVersion) {
-	return await run('player/info', undefined, deviceCode, token, masterVersion, assetVersion);
+async function getPlayerInfo(deviceCode, clientVersion, token, masterVersion, assetVersion) {
+	return await run('player/info', undefined, deviceCode, clientVersion, token, masterVersion, assetVersion);
 }
 
-async function getPlayerSummary(deviceCode, token, masterVersion, assetVersion) {
-	return await run('player/summary', undefined, deviceCode, token, masterVersion, assetVersion);
+async function getPlayerSummary(deviceCode, clientVersion, token, masterVersion, assetVersion) {
+	return await run('player/summary', undefined, deviceCode, clientVersion, token, masterVersion, assetVersion);
 }
 
-async function run(path, body, deviceCode, token, masterVersion, assetVersion) {
+async function run(path, body, deviceCode, clientVersion, token, masterVersion, assetVersion) {
 	let headers = {
 		'Content-Type': 'application/json',
 		'X-Mikoto-Request-Id': uuidv4(),
-		'X-Mikoto-Client-Version': '1.17.20-f0d41edcdb594bdc3830203dc336e6f4',
+		'X-Mikoto-Client-Version': clientVersion,
 		'X-Mikoto-Platform': 'android',
 		'X-Mikoto-Device-Secret': deviceCode
 	};
